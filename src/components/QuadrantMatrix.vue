@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import draggable from 'vuedraggable'
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { SparklesIcon } from '@heroicons/vue/24/solid'
 
 interface Task {
@@ -8,7 +8,44 @@ interface Task {
   title: string
   quadrant: 'q1' | 'q2' | 'q3' | 'q4' // 新增象限标识
 }
+// 在原有接口定义后添加新类型
+interface NewTask {
+  title: string
+  quadrant: 'q1' | 'q2' | 'q3' | 'q4' | ''
+}
 
+// 新增响应式状态
+const newTask = ref<NewTask>({
+  title: '',
+  quadrant: ''
+})
+const inputRef = ref<HTMLInputElement | null>(null)
+// 新增任务方法
+const addTask = () => {
+  if (!newTask.value.title.trim() || !newTask.value.quadrant) {
+    alert('请填写任务标题并选择象限')
+    return
+  }
+
+  tasks.value.push({
+    id: Math.floor(Math.random() * 10000).toString().padStart(4, '0'),
+    title: newTask.value.title.trim(),
+    quadrant: newTask.value.quadrant
+  })
+
+  // 重置表单并聚焦输入框
+  newTask.value = { title: '', quadrant: '' }
+  nextTick(() => inputRef.value?.focus())
+}
+
+// 新增删除方法
+const deleteTask = (taskId: string) => {
+  if (!confirm('确定要删除这个任务吗？\n['+
+    tasks.value.filter(t => t.id === taskId)[0].id+'] '+
+    tasks.value.filter(t => t.id === taskId)[0].title
+  )) return
+  tasks.value = tasks.value.filter(t => t.id !== taskId)
+}
 // 初始化任务数据（为每个任务添加quadrant标识）
 const tasks = ref<Task[]>([
   { id: '1', title: '紧急项目', quadrant: 'q1' },
@@ -103,14 +140,40 @@ const onDragOver = (quadrant: string) => {
 </script>
 
 <template>
-  <div class="container mx-auto p-2 min-w-[1200px]">
+  <div class="container mx-auto p-2 min-w-[800px] max-w-[90vw]">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-3xl font-bold whitespace-nowrap">四象限任务矩阵</h1>
       <span v-if="draggingTask" class="text-gray-500 text-lg whitespace-nowrap">
         正在移动：{{ draggingTask.title }}
       </span>
     </div>
-
+    <!-- 新增任务表单 -->
+    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+      <input
+        ref="inputRef"
+        v-model="newTask.title"
+        type="text"
+        placeholder="输入任务标题"
+        class="px-4 py-2 border rounded-lg flex-grow sm:w-48 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+        @keyup.enter="addTask"
+      >
+      <select
+        v-model="newTask.quadrant"
+        class="px-4 py-2 border rounded-lg bg-white sm:w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+      >
+        <option value="" disabled>选择象限</option>
+        <option value="q1">重要且紧急</option>
+        <option value="q2">紧急不重要</option>
+        <option value="q3">重要不紧急</option>
+        <option value="q4">不重要不紧急</option>
+      </select>
+      <button
+        @click="addTask"
+        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap"
+      >
+        添加任务
+      </button>
+    </div>
     <div class="grid grid-cols-2 grid-rows-[quadrant] gap-4 h-[800px] w-full">
       <!-- 第一象限：重要且紧急 -->
       <div class="bg-red-50 p-2 rounded-lg border-2 border-red-200 flex flex-col"
@@ -134,7 +197,7 @@ const onDragOver = (quadrant: string) => {
             <div class="draggable-item bg-white p-3 mb-2 rounded shadow-lg
               transition-transform duration-150
               hover:scale-[1.02] hover:shadow-xl
-              active:scale-100 active:opacity-80 flex items-center gap-2">
+              active:scale-100 active:opacity-80 flex items-center gap-2 group relative">
               <span class="flex items-center w-full">
                 <!-- ID 标签 - 固定 4 字符宽度 -->
                 <span class="font-mono text-gray-600 bg-gray-100/80 rounded px-1 mr-2 text-right min-w-[3.5ch] max-w-[4ch] flex-none">
@@ -146,6 +209,18 @@ const onDragOver = (quadrant: string) => {
                   {{ element.title }}
                 </span>
               </span>
+              <!-- 删除按钮 -->
+              <button
+                @click.stop="deleteTask(element.id)"
+                class="opacity-0 group-hover:opacity-100 transition-opacity
+                 text-red-500 hover:text-red-700 p-1 -mr-2"
+                title="删除任务"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
               <!-- 新增绿点指示 -->
               <SparklesIcon
                 v-if="lastDraggedTask?.id === element.id"
@@ -191,7 +266,7 @@ const onDragOver = (quadrant: string) => {
             <div class="draggable-item bg-white p-3 mb-2 rounded shadow-lg
               transition-transform duration-150
               hover:scale-[1.02] hover:shadow-xl
-              active:scale-100 active:opacity-80 flex items-center gap-2">
+              active:scale-100 active:opacity-80 flex items-center gap-2 group relative">
               <!-- 新增绿点指示 -->
               <span class="flex items-center w-full">
                 <!-- ID 标签 - 固定 4 字符宽度 -->
@@ -204,6 +279,18 @@ const onDragOver = (quadrant: string) => {
                   {{ element.title }}
                 </span>
               </span>
+              <!-- 删除按钮 -->
+              <button
+                @click.stop="deleteTask(element.id)"
+                class="opacity-0 group-hover:opacity-100 transition-opacity
+                 text-red-500 hover:text-red-700 p-1 -mr-2"
+                title="删除任务"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
               <!-- 新增绿点指示 -->
               <SparklesIcon
                 v-if="lastDraggedTask?.id === element.id"
@@ -249,7 +336,7 @@ const onDragOver = (quadrant: string) => {
             <div class="draggable-item bg-white p-3 mb-2 rounded shadow-lg
               transition-transform duration-150
               hover:scale-[1.02] hover:shadow-xl
-              active:scale-100 active:opacity-80 flex items-center gap-2">
+              active:scale-100 active:opacity-80 flex items-center gap-2 group relative">
               <!-- 新增绿点指示 -->
               <!-- 标题文本 -->
               <span class="flex items-center w-full">
@@ -263,6 +350,18 @@ const onDragOver = (quadrant: string) => {
                   {{ element.title }}
                 </span>
               </span>
+              <!-- 删除按钮 -->
+              <button
+                @click.stop="deleteTask(element.id)"
+                class="opacity-0 group-hover:opacity-100 transition-opacity
+                 text-red-500 hover:text-red-700 p-1 -mr-2"
+                title="删除任务"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
               <!-- 新增绿点指示 -->
               <SparklesIcon
                 v-if="lastDraggedTask?.id === element.id"
@@ -308,7 +407,7 @@ const onDragOver = (quadrant: string) => {
             <div class="draggable-item bg-white p-3 mb-2 rounded shadow-lg
               transition-transform duration-150
               hover:scale-[1.02] hover:shadow-xl
-              active:scale-100 active:opacity-80 flex items-center gap-2">
+              active:scale-100 active:opacity-80 flex items-center gap-2 group relative">
               <!-- 新增绿点指示 -->
               <!-- 标题文本 -->
               <span class="flex items-center w-full">
@@ -322,6 +421,18 @@ const onDragOver = (quadrant: string) => {
                   {{ element.title }}
                 </span>
               </span>
+              <!-- 删除按钮 -->
+              <button
+                @click.stop="deleteTask(element.id)"
+                class="opacity-0 group-hover:opacity-100 transition-opacity
+                 text-red-500 hover:text-red-700 p-1 -mr-2"
+                title="删除任务"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
               <!-- 新增绿点指示 -->
               <SparklesIcon
                 v-if="lastDraggedTask?.id === element.id"
