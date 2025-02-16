@@ -2,6 +2,8 @@
 import draggable from 'vuedraggable'
 import { ref, computed, nextTick, onMounted } from 'vue'
 import { SparklesIcon } from '@heroicons/vue/24/solid'
+import { useTaskStore } from '@/stores/task'
+import { storeToRefs } from 'pinia'
 
 interface Task {
   id: string
@@ -14,37 +16,43 @@ interface NewTask {
   quadrant: 'q1' | 'q2' | 'q3' | 'q4' | ''
 }
 
+const taskStore = useTaskStore()
+const { tasks, quadrants, loading } = storeToRefs(taskStore)
+
+
 // 新增响应式状态
 const newTask = ref<NewTask>({
   title: '',
   quadrant: ''
 })
 const inputRef = ref<HTMLInputElement | null>(null)
-// 新增任务方法
-const addTask = () => {
+// 修改后的addTask方法
+const addTask = async () => {
   if (!newTask.value.title.trim() || !newTask.value.quadrant) {
     alert('请填写任务标题并选择象限')
     return
   }
 
-  tasks.value.push({
-    id: generate4DigitId(),
-    title: newTask.value.title.trim(),
-    quadrant: newTask.value.quadrant
-  })
-
-  // 重置表单并聚焦输入框
-  newTask.value = { title: '', quadrant: '' }
-  nextTick(() => inputRef.value?.focus())
+  try {
+    await taskStore.addTask({
+      title: newTask.value.title.trim(),
+      quadrant: newTask.value.quadrant
+    })
+    newTask.value = { title: '', quadrant: '' }
+    nextTick(() => inputRef.value?.focus())
+  } catch (error) {
+    alert('创建任务失败')
+  }
 }
 
-// 新增删除方法
-const deleteTask = (taskId: string) => {
-  if (!confirm('确定要删除这个任务吗？\n['+
-    tasks.value.filter(t => t.id === taskId)[0].id+'] '+
-    tasks.value.filter(t => t.id === taskId)[0].title
-  )) return
-  tasks.value = tasks.value.filter(t => t.id !== taskId)
+// 修改后的删除方法
+const deleteTask = async (taskId: string) => {
+  if (!confirm('确定要删除吗？')) return
+  try {
+    await taskStore.deleteTask(taskId)
+  } catch (error) {
+    alert('删除失败')
+  }
 }
 
 const events = ref<any[]>([])
@@ -52,6 +60,7 @@ const events = ref<any[]>([])
 onMounted(async () => {
   const response = await fetch('/events.json')
   events.value = await response.json()
+  taskStore.fetchTasks()
 })
 
 // 新增随机添加方法
@@ -81,12 +90,12 @@ const generate4DigitId = () => {
 
 
 // 初始化任务数据（为每个任务添加quadrant标识）
-const tasks = ref<Task[]>([
-  { id: '1', title: '紧急项目', quadrant: 'q1' },
-  { id: '2', title: '临时会议', quadrant: 'q2' },
-  { id: '3', title: '技能提升', quadrant: 'q3' },
-  { id: '4', title: '社交媒体', quadrant: 'q4' }
-])
+// const tasks = ref<Task[]>([
+//   { id: '1', title: '紧急项目', quadrant: 'q1' },
+//   { id: '2', title: '临时会议', quadrant: 'q2' },
+//   { id: '3', title: '技能提升', quadrant: 'q3' },
+//   { id: '4', title: '社交媒体', quadrant: 'q4' }
+// ])
 // 新增响应式状态
 const draggingTask = ref<Task | null>(null)
 const currentTargetQuadrant = ref<string | null>(null)
@@ -94,12 +103,12 @@ const currentTargetQuadrant = ref<string | null>(null)
 const lastDraggedTask = ref<Task | null>(null)
 
 // 根据象限分类的响应式数据
-const quadrants = computed(() => ({
-  q1: tasks.value.filter(t => t.quadrant === 'q1'),
-  q2: tasks.value.filter(t => t.quadrant === 'q2'),
-  q3: tasks.value.filter(t => t.quadrant === 'q3'),
-  q4: tasks.value.filter(t => t.quadrant === 'q4'),
-}))
+// const quadrants = computed(() => ({
+//   q1: tasks.value.filter(t => t.quadrant === 'q1'),
+//   q2: tasks.value.filter(t => t.quadrant === 'q2'),
+//   q3: tasks.value.filter(t => t.quadrant === 'q3'),
+//   q4: tasks.value.filter(t => t.quadrant === 'q4'),
+// }))
 
 // 处理跨象限拖拽
 // 更新后的 handleChange 函数
@@ -218,7 +227,8 @@ const onDragOver = (quadrant: string) => {
         <span>随机添加任务</span>
       </button>
     </div>
-    <div class="grid grid-cols-2 grid-rows-[quadrant] gap-4 h-[800px] w-full">
+    <div v-if="loading">加载中...</div>
+    <div v-else class="grid grid-cols-2 grid-rows-[quadrant] gap-4 h-[800px] w-full">
       <!-- 第一象限：重要且紧急 -->
       <div class="bg-red-50 p-2 rounded-lg border-2 border-red-200 flex flex-col"
            :class="[
