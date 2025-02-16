@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import draggable from 'vuedraggable'
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { SparklesIcon } from '@heroicons/vue/24/solid'
 
 interface Task {
@@ -28,7 +28,7 @@ const addTask = () => {
   }
 
   tasks.value.push({
-    id: Math.floor(Math.random() * 10000).toString().padStart(4, '0'),
+    id: generate4DigitId(),
     title: newTask.value.title.trim(),
     quadrant: newTask.value.quadrant
   })
@@ -46,6 +46,40 @@ const deleteTask = (taskId: string) => {
   )) return
   tasks.value = tasks.value.filter(t => t.id !== taskId)
 }
+
+const events = ref<any[]>([])
+// 初始化加载事件数据
+onMounted(async () => {
+  const response = await fetch('/events.json')
+  events.value = await response.json()
+})
+
+// 新增随机添加方法
+const addRandomTask = () => {
+  if (events.value.length === 0) return
+
+  const randomIndex = Math.floor(Math.random() * events.value.length)
+  const randomEvent = events.value[randomIndex]
+  const quadrants = ['q1', 'q2', 'q3', 'q4']
+  const randomQuadrant = quadrants[Math.floor(Math.random() * 4)] as 'q1' | 'q2' | 'q3' | 'q4'
+
+  tasks.value.push({
+    id: generate4DigitId(),
+    title: `${randomEvent.title} (${randomEvent.category})`,
+    quadrant: randomQuadrant
+  })
+}
+
+// 独立ID生成方法
+const generate4DigitId = () => {
+  let id: string
+  do {
+    id = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+  } while (tasks.value.some(t => t.id === id))
+  return id
+}
+
+
 // 初始化任务数据（为每个任务添加quadrant标识）
 const tasks = ref<Task[]>([
   { id: '1', title: '紧急项目', quadrant: 'q1' },
@@ -172,6 +206,16 @@ const onDragOver = (quadrant: string) => {
         class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap"
       >
         添加任务
+      </button>
+      <!-- 新增随机按钮 -->
+      <button
+        @click="addRandomTask"
+        class="px-4 py-2 bg-purple-500 text-white rounded-lg
+                 hover:bg-purple-600 transition-colors whitespace-nowrap
+                 flex items-center gap-1"
+      >
+        <SparklesIcon class="size-5" />
+        <span>随机添加任务</span>
       </button>
     </div>
     <div class="grid grid-cols-2 grid-rows-[quadrant] gap-4 h-[800px] w-full">

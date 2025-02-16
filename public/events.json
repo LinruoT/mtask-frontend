@@ -1,0 +1,524 @@
+[
+  {
+    "title": "实现Spring Boot Starter",
+    "detail": "创建自定义Starter并配置自动装配",
+    "category": "Java后端"
+  },
+  {
+    "title": "设计DDD领域模型",
+    "detail": "使用聚合根和值对象构建领域层",
+    "category": "Java后端"
+  },
+  {
+    "title": "优化JVM参数配置",
+    "detail": "调整堆内存和GC策略提升性能",
+    "category": "Java后端"
+  },
+  {
+    "title": "集成Elasticsearch搜索",
+    "detail": "实现全文检索和高亮显示功能",
+    "category": "Java后端"
+  },
+  {
+    "title": "实现分布式锁",
+    "detail": "基于Redis或ZooKeeper的锁机制",
+    "category": "Java后端"
+  },
+  {
+    "title": "配置Spring Cloud Gateway",
+    "detail": "实现路由过滤和限流策略",
+    "category": "Java后端"
+  },
+  {
+    "title": "实现文件分片上传",
+    "detail": "支持大文件断点续传功能",
+    "category": "Java后端"
+  },
+  {
+    "title": "监控Spring Boot应用",
+    "detail": "集成Prometheus和Grafana仪表盘",
+    "category": "Java后端"
+  },
+  {
+    "title": "设计数据库分表方案",
+    "detail": "实现水平分表和路由策略",
+    "category": "Java后端"
+  },
+  {
+    "title": "集成WebSocket通信",
+    "detail": "实现实时消息推送功能",
+    "category": "Java后端"
+  },
+  {
+    "title": "优化SQL查询性能",
+    "detail": "使用EXPLAIN分析执行计划",
+    "category": "Java后端"
+  },
+  {
+    "title": "实现RBAC权限系统",
+    "detail": "基于角色的访问控制设计",
+    "category": "Java后端"
+  },
+  {
+    "title": "配置多数据源切换",
+    "detail": "动态路由不同数据库连接",
+    "category": "Java后端"
+  },
+  {
+    "title": "实现日志链路追踪",
+    "detail": "集成MDC和TraceID记录",
+    "category": "Java后端"
+  },
+  {
+    "title": "设计缓存穿透方案",
+    "detail": "使用布隆过滤器防御攻击",
+    "category": "Java后端"
+  },
+  {
+    "title": "集成Swagger文档",
+    "detail": "自动生成API接口文档",
+    "category": "Java后端"
+  },
+  {
+    "title": "实现JWT认证方案",
+    "detail": "签发和验证Token令牌",
+    "category": "Java后端"
+  },
+  {
+    "title": "配置CI/CD流水线",
+    "detail": "自动化构建与部署流程",
+    "category": "Java后端"
+  },
+  {
+    "title": "处理消息队列积压",
+    "detail": "优化消费者并行处理能力",
+    "category": "Java后端"
+  },
+  {
+    "title": "实现数据脱敏处理",
+    "detail": "敏感字段加密与掩码展示",
+    "category": "Java后端"
+  },
+  {
+    "title": "设计幂等接口方案",
+    "detail": "防止重复提交的机制实现",
+    "category": "Java后端"
+  },
+  {
+    "title": "实现Excel导入导出",
+    "detail": "处理复杂表格数据解析",
+    "category": "Java后端"
+  },
+  {
+    "title": "集成定时任务系统",
+    "detail": "动态配置任务执行策略",
+    "category": "Java后端"
+  },
+  {
+    "title": "实现灰度发布功能",
+    "detail": "按比例分流请求流量",
+    "category": "Java后端"
+  },
+  {
+    "title": "设计降级熔断策略",
+    "detail": "使用Sentinel保护核心服务",
+    "category": "Java后端"
+  },
+
+  {
+    "title": "实现虚拟列表渲染",
+    "detail": "优化大数据量展示性能",
+    "category": "Web前端"
+  },
+  {
+    "title": "开发自定义Vue指令",
+    "detail": "实现DOM操作封装",
+    "category": "Web前端"
+  },
+  {
+    "title": "配置代码规范工具",
+    "detail": "集成ESLint+Prettier+CommitLint",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现拖拽排序功能",
+    "detail": "使用HTML5 Drag and Drop API",
+    "category": "Web前端"
+  },
+  {
+    "title": "优化Web字体加载",
+    "detail": "防止布局偏移(CLS)",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现水印防爬功能",
+    "detail": "动态生成DOM水印",
+    "category": "Web前端"
+  },
+  {
+    "title": "开发Chrome插件",
+    "detail": "实现网页内容抓取工具",
+    "category": "Web前端"
+  },
+  {
+    "title": "配置PWA离线缓存",
+    "detail": "实现Service Worker策略",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现权限路由控制",
+    "detail": "动态加载可访问路由",
+    "category": "Web前端"
+  },
+  {
+    "title": "优化LCP核心指标",
+    "detail": "图片懒加载和资源预加载",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现全屏滚动效果",
+    "detail": "使用Scroll Snap特性",
+    "category": "Web前端"
+  },
+  {
+    "title": "开发可视化编辑器",
+    "detail": "基于JSONSchema生成表单",
+    "category": "Web前端"
+  },
+  {
+    "title": "配置微前端架构",
+    "detail": "实现子应用隔离与通信",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现暗黑模式切换",
+    "detail": "CSS变量与主题管理",
+    "category": "Web前端"
+  },
+  {
+    "title": "优化动画性能",
+    "detail": "使用requestAnimationFrame",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现前端日志上报",
+    "detail": "监控用户行为与异常",
+    "category": "Web前端"
+  },
+  {
+    "title": "开发Chrome调试工具",
+    "detail": "自定义DevTools面板",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现PDF预览功能",
+    "detail": "使用PDF.js渲染文档",
+    "category": "Web前端"
+  },
+  {
+    "title": "配置代码拆分策略",
+    "detail": "按路由动态加载模块",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现SSR同构渲染",
+    "detail": "处理客户端注水过程",
+    "category": "Web前端"
+  },
+  {
+    "title": "优化移动端体验",
+    "detail": "处理300ms点击延迟",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现WebGL可视化",
+    "detail": "使用Three.js创建3D场景",
+    "category": "Web前端"
+  },
+  {
+    "title": "配置国际化方案",
+    "detail": "动态语言包加载策略",
+    "category": "Web前端"
+  },
+  {
+    "title": "实现剪贴板操作",
+    "detail": "处理敏感数据复制限制",
+    "category": "Web前端"
+  },
+  {
+    "title": "开发浏览器扩展",
+    "detail": "实现广告拦截功能",
+    "category": "Web前端"
+  },
+  {
+    "title": "训练图像分类模型",
+    "detail": "使用PyTorch实现ResNet",
+    "category": "AI"
+  },
+  {
+    "title": "实现文本情感分析",
+    "detail": "基于BERT的微调方案",
+    "category": "AI"
+  },
+
+  {
+    "title": "实现线程安全队列",
+    "detail": "使用Condition变量实现",
+    "category": "计算机基础"
+  },
+  {
+    "title": "解析HTTP/2协议",
+    "detail": "实现多路复用机制",
+    "category": "计算机基础"
+  },
+  {
+    "title": "训练图像分类模型",
+    "detail": "使用PyTorch实现ResNet-50训练",
+    "category": "AI"
+  },
+  {
+    "title": "实现文本情感分析",
+    "detail": "基于BERT的微调方案与部署",
+    "category": "AI"
+  },
+  {
+    "title": "构建推荐系统",
+    "detail": "实现协同过滤与矩阵分解算法",
+    "category": "AI"
+  },
+  {
+    "title": "优化模型推理速度",
+    "detail": "使用TensorRT进行模型加速",
+    "category": "AI"
+  },
+  {
+    "title": "实现目标检测模型",
+    "detail": "YOLOv5的定制化训练与部署",
+    "category": "AI"
+  },
+  {
+    "title": "处理类别不平衡数据",
+    "detail": "应用SMOTE过采样技术",
+    "category": "AI"
+  },
+  {
+    "title": "实现神经风格迁移",
+    "detail": "基于VGG网络的特征提取",
+    "category": "AI"
+  },
+  {
+    "title": "构建对话系统",
+    "detail": "使用Transformer实现聊天机器人",
+    "category": "AI"
+  },
+  {
+    "title": "优化超参数组合",
+    "detail": "实施贝叶斯优化搜索策略",
+    "category": "AI"
+  },
+  {
+    "title": "实现图像分割模型",
+    "detail": "U-Net网络医学影像分析",
+    "category": "AI"
+  },
+  {
+    "title": "处理时序数据预测",
+    "detail": "LSTM网络股票价格预测",
+    "category": "AI"
+  },
+  {
+    "title": "实现模型可解释性",
+    "detail": "应用SHAP值分析特征重要性",
+    "category": "AI"
+  },
+  {
+    "title": "构建知识图谱",
+    "detail": "使用Neo4j存储关联数据",
+    "category": "AI"
+  },
+  {
+    "title": "实现强化学习demo",
+    "detail": "Q-Learning解决迷宫问题",
+    "category": "AI"
+  },
+  {
+    "title": "处理数据缺失值",
+    "detail": "应用KNN插补方法",
+    "category": "AI"
+  },
+  {
+    "title": "实现模型监控系统",
+    "detail": "跟踪数据漂移与性能衰减",
+    "category": "AI"
+  },
+  {
+    "title": "构建自动机器学习系统",
+    "detail": "使用AutoSKlearn实现自动化",
+    "category": "AI"
+  },
+  {
+    "title": "实现多模态模型",
+    "detail": "联合处理文本与图像输入",
+    "category": "AI"
+  },
+  {
+    "title": "优化模型部署内存",
+    "detail": "应用模型剪枝与量化技术",
+    "category": "AI"
+  },
+  {
+    "title": "实现异常检测系统",
+    "detail": "基于孤立森林算法",
+    "category": "AI"
+  },
+  {
+    "title": "处理非结构化数据",
+    "detail": "PDF文本抽取与清洗",
+    "category": "AI"
+  },
+  {
+    "title": "实现语音识别功能",
+    "detail": "使用Wav2Vec2模型",
+    "category": "AI"
+  },
+  {
+    "title": "构建图神经网络",
+    "detail": "社交网络关系预测",
+    "category": "AI"
+  },
+  {
+    "title": "实现模型A/B测试",
+    "detail": "设计在线评估方案",
+    "category": "AI"
+  },
+  {
+    "title": "优化训练数据流水线",
+    "detail": "使用TFRecord格式加速",
+    "category": "AI"
+  },
+  {
+    "title": "实现LRU缓存算法",
+    "detail": "哈希表+双向链表实现",
+    "category": "计算机基础"
+  },
+  {
+    "title": "解析HTTP/2协议",
+    "detail": "实现多路复用机制",
+    "category": "计算机基础"
+  },
+  {
+    "title": "设计进程调度算法",
+    "detail": "实现CFS完全公平调度",
+    "category": "计算机基础"
+  },
+  {
+    "title": "实现内存分配器",
+    "detail": "模拟Buddy System算法",
+    "category": "计算机基础"
+  },
+  {
+    "title": "解析SSL握手过程",
+    "detail": "抓包分析密钥交换流程",
+    "category": "计算机基础"
+  },
+  {
+    "title": "实现快速排序算法",
+    "detail": "递归与非递归版本实现",
+    "category": "计算机基础"
+  },
+  {
+    "title": "设计文件系统结构",
+    "detail": "实现简单的FAT表管理",
+    "category": "计算机基础"
+  },
+  {
+    "title": "实现线程池",
+    "detail": "使用工作队列模式",
+    "category": "计算机基础"
+  },
+  {
+    "title": "解析DNS查询过程",
+    "detail": "实现本地DNS缓存",
+    "category": "计算机基础"
+  },
+  {
+    "title": "设计缓存一致性协议",
+    "detail": "模拟MESI状态机",
+    "category": "计算机基础"
+  },
+  {
+    "title": "实现红黑树结构",
+    "detail": "完成插入删除操作",
+    "category": "计算机基础"
+  },
+  {
+    "title": "解析IP分片重组",
+    "detail": "处理MTU限制问题",
+    "category": "计算机基础"
+  },
+  {
+    "title": "实现死锁检测算法",
+    "detail": "银行家算法实现",
+    "category": "计算机基础"
+  },
+  {
+    "title": "设计虚拟机内存模型",
+    "detail": "模拟栈式架构",
+    "category": "计算机基础"
+  },
+  {
+    "title": "实现RSA加密算法",
+    "detail":  "大素数生成与模幂运算",
+    "category": "计算机基础"
+  },
+  {
+    "title": "解析ARP协议过程",
+    "detail": "实现地址解析缓存",
+    "category": "计算机基础"
+  },
+  {
+    "title": "设计跳表数据结构",
+    "detail": "实现O(log n)查询",
+    "category": "计算机基础"
+  },
+  {
+    "title": "实现零拷贝传输",
+    "detail": "使用mmap优化IO",
+    "category": "计算机基础"
+  },
+  {
+    "title": "解析B+树结构",
+    "detail": "实现数据库索引模拟",
+    "category": "计算机基础"
+  },
+  {
+    "title": "设计协程调度器",
+    "detail": "实现上下文切换",
+    "category": "计算机基础"
+  },
+  {
+    "title": "实现位图内存管理",
+    "detail":  "模拟物理内存分配",
+    "category": "计算机基础"
+  },
+  {
+    "title": "解析TCP粘包问题",
+    "detail": "实现消息边界处理",
+    "category": "计算机基础"
+  },
+  {
+    "title": "设计正则表达式引擎",
+    "detail": "实现NFA状态机",
+    "category": "计算机基础"
+  },
+  {
+    "title": "实现布隆过滤器",
+    "detail": "优化哈希函数数量",
+    "category": "计算机基础"
+  },
+  {
+    "title": "解析处理器流水线",
+    "detail": "模拟五级流水冲突",
+    "category": "计算机基础"
+  }
+]
