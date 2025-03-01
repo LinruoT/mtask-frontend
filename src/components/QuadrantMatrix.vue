@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import draggable from 'vuedraggable'
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { SparklesIcon } from '@heroicons/vue/24/solid'
 import { useTaskStore } from '@/stores/task'
 import { storeToRefs } from 'pinia'
+import QuadrantPanel from './QuadrantPanel.vue'
 
 interface Task {
   id: string
@@ -17,13 +17,12 @@ interface NewTask {
 }
 
 const taskStore = useTaskStore()
-const { tasks, quadrants, loading } = storeToRefs(taskStore)
-
+const { quadrants, loading } = storeToRefs(taskStore)
 
 // 新增响应式状态
 const newTask = ref<NewTask>({
   title: '',
-  quadrant: ''
+  quadrant: '',
 })
 const inputRef = ref<HTMLInputElement | null>(null)
 // 修改后的addTask方法
@@ -36,12 +35,13 @@ const addTask = async () => {
   try {
     await taskStore.addTask({
       title: newTask.value.title.trim(),
-      quadrant: newTask.value.quadrant
+      quadrant: newTask.value.quadrant,
     })
     newTask.value = { title: '', quadrant: '' }
     nextTick(() => inputRef.value?.focus())
-  } catch (error) {
+  } catch (error: unknown) {
     alert('创建任务失败')
+    console.error(error)
   }
 }
 
@@ -50,12 +50,24 @@ const deleteTask = async (taskId: string) => {
   if (!confirm('确定要删除吗？')) return
   try {
     await taskStore.deleteTask(taskId)
-  } catch (error) {
+  } catch (error: unknown) {
     alert('删除失败')
+    console.error(error)
   }
 }
 
-const events = ref<any[]>([])
+// 修改后的完成方法
+const completeTask = async (taskId: string) => {
+  if (!confirm('确定要完成吗？')) return
+  try {
+    await taskStore.completeTask(taskId)
+  } catch (error: unknown) {
+    alert('完成失败')
+    console.error(error)
+  }
+}
+
+const events = ref<Array<{ title: string; category: string }>>([])
 // 初始化加载事件数据
 onMounted(async () => {
   const response = await fetch('/events.json')
@@ -64,122 +76,94 @@ onMounted(async () => {
 })
 
 // 新增随机添加方法
-const addRandomTask = () => {
+const addRandomTask = async () => {
   if (events.value.length === 0) return
 
-  const randomIndex = Math.floor(Math.random() * events.value.length)
-  const randomEvent = events.value[randomIndex]
-  const quadrants = ['q1', 'q2', 'q3', 'q4']
-  const randomQuadrant = quadrants[Math.floor(Math.random() * 4)] as 'q1' | 'q2' | 'q3' | 'q4'
+  try {
+    const randomIndex = Math.floor(Math.random() * events.value.length)
+    const randomEvent = events.value[randomIndex]
+    const quadrants = ['q1', 'q2', 'q3', 'q4']
+    const randomQuadrant = quadrants[Math.floor(Math.random() * 4)] as 'q1' | 'q2' | 'q3' | 'q4'
 
-  tasks.value.push({
-    id: generate4DigitId(),
-    title: `${randomEvent.title} (${randomEvent.category})`,
-    quadrant: randomQuadrant
-  })
+    // 使用 taskStore.addTask 保存到后端，后端会自动生成ID
+    await taskStore.addTask({
+      title: `${randomEvent.title} (${randomEvent.category})`,
+      quadrant: randomQuadrant,
+    })
+  } catch (error: unknown) {
+    console.error('随机添加任务失败', error)
+    alert('随机添加任务失败')
+  }
 }
 
-// 独立ID生成方法
-const generate4DigitId = () => {
-  let id: string
-  do {
-    id = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
-  } while (tasks.value.some(t => t.id === id))
-  return id
-}
-
-
-// 初始化任务数据（为每个任务添加quadrant标识）
-// const tasks = ref<Task[]>([
-//   { id: '1', title: '紧急项目', quadrant: 'q1' },
-//   { id: '2', title: '临时会议', quadrant: 'q2' },
-//   { id: '3', title: '技能提升', quadrant: 'q3' },
-//   { id: '4', title: '社交媒体', quadrant: 'q4' }
-// ])
 // 新增响应式状态
 const draggingTask = ref<Task | null>(null)
 const currentTargetQuadrant = ref<string | null>(null)
 // 新增最后移动记录
 const lastDraggedTask = ref<Task | null>(null)
 
-// 根据象限分类的响应式数据
-// const quadrants = computed(() => ({
-//   q1: tasks.value.filter(t => t.quadrant === 'q1'),
-//   q2: tasks.value.filter(t => t.quadrant === 'q2'),
-//   q3: tasks.value.filter(t => t.quadrant === 'q3'),
-//   q4: tasks.value.filter(t => t.quadrant === 'q4'),
-// }))
-
 // 处理跨象限拖拽
 // 更新后的 handleChange 函数
-const handleChange = (
+const handleChange = async (
   event: {
-    added?: { element: Task, newIndex: number },  // 新增 newIndex
-    moved?: { oldIndex: number, newIndex: number }
+    added?: { element: Task; newIndex: number } // 新增 newIndex
+    moved?: { oldIndex: number; newIndex: number }
   },
-  quadrant: 'q1' | 'q2' | 'q3' | 'q4'
+  quadrant: 'q1' | 'q2' | 'q3' | 'q4',
 ) => {
   if (event.added) {
-    const task = event.added.element;
-    const targetIndex = event.added.newIndex; // 获取目标位置索引
+    const task = event.added.element
 
-    // 创建新数组（深拷贝避免引用问题）
-    const newTasks = JSON.parse(JSON.stringify(tasks.value));
+    // 不需要重新更新本地状态，因为 vuedraggable 已经更新了视图
+    // draggable 组件监听的是 quadrants.qX 数组，它们是计算属性
+    // 只需要更新任务的象限属性，计算属性会自动更新视图
 
-    // 从原位置移除
-    const sourceIndex = newTasks.findIndex((t: Task) => t.id === task.id);
-    if (sourceIndex > -1) {
-      newTasks.splice(sourceIndex, 1);
+    try {
+      // 直接调用 API 更新任务的象限，不更新本地状态
+      // 因为 vuedraggable 已经在视图上反映了这个变化
+      await taskStore.updateTaskQuadrant(task.id, quadrant)
+
+      // 不要在这里设置 lastDraggedTask，应该在 onDragEnd 里设置
+    } catch (error) {
+      console.error('更新任务象限失败', error)
+      alert('保存更改失败，请刷新页面重试')
+      // 如果更新失败，刷新获取最新数据
+      await taskStore.fetchTasks()
     }
-
-    // 插入到目标位置
-    const quadrantTasks = newTasks.filter((t: Task) => t.quadrant === quadrant);
-    const otherTasks = newTasks.filter((t: Task) => t.quadrant !== quadrant);
-
-    // 计算实际插入位置
-    const insertIndex = Math.min(targetIndex, quadrantTasks.length);
-    quadrantTasks.splice(insertIndex, 0, { ...task, quadrant });
-
-    // 合并数组
-    tasks.value = [...otherTasks, ...quadrantTasks];
-
   } else if (event.moved) {
-    // 处理同一象限内的移动
-    const quadrantTasks = tasks.value.filter(t => t.quadrant === quadrant);
-    const reordered = arrayMove(quadrantTasks, event.moved.oldIndex, event.moved.newIndex);
-    tasks.value = [
-      ...tasks.value.filter(t => t.quadrant !== quadrant),
-      ...reordered
-    ];
+    // 同象限内的顺序变化，vuedraggable 已经更新了视图
+    // 不需要额外处理，也不需要调用 API（因为我们目前没有保存顺序）
   }
-};
-
-
-
-// 使用独立工具函数处理数组移动
-const arrayMove = <T>(arr: T[], from: number, to: number): T[] => {
-  const copy = [...arr];
-  const [removed] = copy.splice(from, 1);
-  copy.splice(to, 0, removed);
-  return copy;
-};
+}
 
 // 修改后的拖拽事件处理
-const onDragStart = (e: any) => {
-  const task = e.item.__draggable_context.element;
-  draggingTask.value = task;
+const onDragStart = (e: { item: { __draggable_context: { element: Task } } }) => {
+  const task = e.item.__draggable_context.element
+  draggingTask.value = task
 }
 
 const onDragEnd = () => {
-  lastDraggedTask.value = draggingTask.value? draggingTask.value : lastDraggedTask.value;
+  // 保存之前拖拽的任务作为最后拖拽的任务
+  if (draggingTask.value) {
+    lastDraggedTask.value = { ...draggingTask.value }
+  }
+
+  // 重置当前拖拽状态
   draggingTask.value = null
   currentTargetQuadrant.value = null
-  console.log(lastDraggedTask.value)
 }
 
 const onDragOver = (quadrant: string) => {
   currentTargetQuadrant.value = quadrant
 }
+
+// 象限配置
+const quadrantConfig = [
+  { id: 'q1', title: '重要且紧急', color: 'red' },
+  { id: 'q2', title: '紧急不重要', color: 'yellow' },
+  { id: 'q3', title: '重要不紧急', color: 'green' },
+  { id: 'q4', title: '不重要不紧急', color: 'blue' },
+]
 </script>
 
 <template>
@@ -199,7 +183,7 @@ const onDragOver = (quadrant: string) => {
         placeholder="输入任务标题"
         class="px-4 py-2 border rounded-lg flex-grow sm:w-48 focus:ring-2 focus:ring-blue-400 focus:outline-none"
         @keyup.enter="addTask"
-      >
+      />
       <select
         v-model="newTask.quadrant"
         class="px-4 py-2 border rounded-lg bg-white sm:w-36 focus:ring-2 focus:ring-blue-400 focus:outline-none"
@@ -219,9 +203,7 @@ const onDragOver = (quadrant: string) => {
       <!-- 新增随机按钮 -->
       <button
         @click="addRandomTask"
-        class="px-4 py-2 bg-purple-500 text-white rounded-lg
-                 hover:bg-purple-600 transition-colors whitespace-nowrap
-                 flex items-center gap-1"
+        class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors whitespace-nowrap flex items-center gap-1"
       >
         <SparklesIcon class="size-5" />
         <span>随机添加任务</span>
@@ -229,290 +211,26 @@ const onDragOver = (quadrant: string) => {
     </div>
     <div v-if="loading">加载中...</div>
     <div v-else class="grid grid-cols-2 grid-rows-[quadrant] gap-4 h-[800px] w-full">
-      <!-- 第一象限：重要且紧急 -->
-      <div class="bg-red-50 p-2 rounded-lg border-2 border-red-200 flex flex-col"
-           :class="[
-          currentTargetQuadrant === 'q1' ? 'border-dashed border-red-400' : 'border-red-200',
-          quadrants.q1.length === 0 ? 'min-h-[200px]' : ''
-        ]"
-           @dragover.prevent="onDragOver('q1')"
-      >
-        <h2 class="text-xl font-semibold mb-4 text-red-600">重要且紧急</h2>
-        <draggable
-          :list="quadrants.q1"
-          group="tasks"
-          item-key="id"
-          class="drag-area h-full min-h-[200px] relative rounded-lg border-2 border-red-200"
-          @change="handleChange($event, 'q1')"
-          @start="onDragStart"
-          @end="onDragEnd"
-        >
-          <template #item="{ element }">
-            <div class="draggable-item bg-white p-3 mb-2 rounded shadow-lg
-              transition-transform duration-150
-              hover:scale-[1.02] hover:shadow-xl
-              active:scale-100 active:opacity-80 flex items-center gap-2 group relative">
-              <span class="flex items-center w-full">
-                <!-- ID 标签 - 固定 4 字符宽度 -->
-                <span class="font-mono text-gray-600 bg-gray-100/80 rounded px-1 mr-2 text-right min-w-[3.5ch] max-w-[4ch] flex-none">
-                  {{ element.id }}
-                </span>
-
-                <!-- 标题 - 自动截断 -->
-                <span class="truncate flex-1">
-                  {{ element.title }}
-                </span>
-              </span>
-              <!-- 删除按钮 -->
-              <button
-                @click.stop="deleteTask(element.id)"
-                class="opacity-0 group-hover:opacity-100 transition-opacity
-                 text-red-500 hover:text-red-700 p-1 -mr-2"
-                title="删除任务"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
-              <!-- 新增绿点指示 -->
-              <SparklesIcon
-                v-if="lastDraggedTask?.id === element.id"
-                class="size-6 shrink-0 text-yellow-400"
-              />
-              <div
-                v-if="draggingTask?.id === element.id"
-                class="absolute inset-0 border-2 border-dashed border-blue-400 rounded-lg"
-              />
-            </div>
-          </template>
-          <!-- 空状态提示 -->
-          <template #footer>
-            <div
-              v-if="quadrants.q1.length === 0 && currentTargetQuadrant !== 'q1'"
-              class="text-gray-400 text-sm h-full flex items-center justify-center py-4"
-            >
-              拖动任务到这里
-            </div>
-          </template>
-        </draggable>
-      </div>
-
-      <!-- 第二象限：紧急不重要 -->
-      <div class="bg-yellow-50 p-2 rounded-lg border-2 border-yellow-200 flex flex-col"
-           :class="[
-          currentTargetQuadrant === 'q2' ? 'border-dashed border-yellow-400' : 'border-yellow-200',
-          quadrants.q2.length === 0 ? 'min-h-[200px]' : ''
-        ]"
-           @dragover.prevent="onDragOver('q2')"
-      >
-        <h2 class="text-xl font-semibold mb-4 text-yellow-600">紧急不重要</h2>
-        <draggable
-          :list="quadrants.q2"
-          group="tasks"
-          item-key="id"
-          class="drag-area h-full min-h-[200px] relative rounded-lg border-2 border-yellow-200"
-          @change="handleChange($event, 'q2')"
-          @start="onDragStart"
-          @end="onDragEnd"
-        >
-          <template #item="{ element }">
-            <div class="draggable-item bg-white p-3 mb-2 rounded shadow-lg
-              transition-transform duration-150
-              hover:scale-[1.02] hover:shadow-xl
-              active:scale-100 active:opacity-80 flex items-center gap-2 group relative">
-              <!-- 新增绿点指示 -->
-              <span class="flex items-center w-full">
-                <!-- ID 标签 - 固定 4 字符宽度 -->
-                <span class="font-mono text-gray-600 bg-gray-100/80 rounded px-1 mr-2 text-right min-w-[3.5ch] max-w-[4ch] flex-none">
-                  {{ element.id }}
-                </span>
-
-                <!-- 标题 - 自动截断 -->
-                <span class="truncate flex-1">
-                  {{ element.title }}
-                </span>
-              </span>
-              <!-- 删除按钮 -->
-              <button
-                @click.stop="deleteTask(element.id)"
-                class="opacity-0 group-hover:opacity-100 transition-opacity
-                 text-red-500 hover:text-red-700 p-1 -mr-2"
-                title="删除任务"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
-              <!-- 新增绿点指示 -->
-              <SparklesIcon
-                v-if="lastDraggedTask?.id === element.id"
-                class="size-6 shrink-0 text-yellow-400"
-              />
-              <div
-                v-if="draggingTask?.id === element.id"
-                class="absolute inset-0 border-2 border-dashed border-blue-400 rounded-lg"
-              />
-            </div>
-          </template>
-          <!-- 空状态提示 -->
-          <template #footer>
-            <div
-              v-if="quadrants.q2.length === 0 && currentTargetQuadrant !== 'q2'"
-              class="text-gray-400 text-sm h-full flex items-center justify-center py-4"
-            >
-              拖动任务到这里
-            </div>
-          </template>
-        </draggable>
-      </div>
-
-      <!-- 第三象限：重要不紧急 -->
-      <div class="bg-green-50 p-2 rounded-lg border-2 border-green-200 flex flex-col"
-           :class="[
-          currentTargetQuadrant === 'q3' ? 'border-dashed border-green-400' : 'border-green-200',
-          quadrants.q3.length === 0 ? 'min-h-[200px]' : ''
-        ]"
-           @dragover.prevent="onDragOver('q3')"
-      >
-        <h2 class="text-xl font-semibold mb-4 text-green-600">重要不紧急</h2>
-        <draggable
-          :list="quadrants.q3"
-          group="tasks"
-          item-key="id"
-          class="drag-area h-full min-h-[200px] relative rounded-lg border-2 border-green-200"
-          @change="handleChange($event, 'q3')"
-          @start="onDragStart"
-          @end="onDragEnd"
-        >
-          <template #item="{ element }">
-            <div class="draggable-item bg-white p-3 mb-2 rounded shadow-lg
-              transition-transform duration-150
-              hover:scale-[1.02] hover:shadow-xl
-              active:scale-100 active:opacity-80 flex items-center gap-2 group relative">
-              <!-- 新增绿点指示 -->
-              <!-- 标题文本 -->
-              <span class="flex items-center w-full">
-                <!-- ID 标签 - 固定 4 字符宽度 -->
-                <span class="font-mono text-gray-600 bg-gray-100/80 rounded px-1 mr-2 text-right min-w-[3.5ch] max-w-[4ch] flex-none">
-                  {{ element.id }}
-                </span>
-
-                <!-- 标题 - 自动截断 -->
-                <span class="truncate flex-1">
-                  {{ element.title }}
-                </span>
-              </span>
-              <!-- 删除按钮 -->
-              <button
-                @click.stop="deleteTask(element.id)"
-                class="opacity-0 group-hover:opacity-100 transition-opacity
-                 text-red-500 hover:text-red-700 p-1 -mr-2"
-                title="删除任务"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
-              <!-- 新增绿点指示 -->
-              <SparklesIcon
-                v-if="lastDraggedTask?.id === element.id"
-                class="size-6 shrink-0 text-yellow-400"
-              />
-              <div
-                v-if="draggingTask?.id === element.id"
-                class="absolute inset-0 border-2 border-dashed border-blue-400 rounded-lg"
-              />
-            </div>
-          </template>
-          <!-- 空状态提示 -->
-          <template #footer>
-            <div
-              v-if="quadrants.q3.length === 0 && currentTargetQuadrant !== 'q3'"
-              class="text-gray-400 text-sm h-full flex items-center justify-center py-4"
-            >
-              拖动任务到这里
-            </div>
-          </template>
-        </draggable>
-      </div>
-
-      <!-- 第四象限：不重要不紧急 -->
-      <div class="bg-blue-50 p-2 rounded-lg border-2 border-blue-200 flex flex-col"
-           :class="[
-          currentTargetQuadrant === 'q4' ? 'border-dashed border-blue-400' : 'border-blue-200',
-          quadrants.q4.length === 0 ? 'min-h-[200px]' : ''
-        ]"
-           @dragover.prevent="onDragOver('q4')"
-      >
-        <h2 class="text-xl font-semibold mb-4 text-blue-600">不重要不紧急</h2>
-        <draggable
-          :list="quadrants.q4"
-          group="tasks"
-          item-key="id"
-          class="drag-area h-full min-h-[200px] relative rounded-lg border-2 border-blue-200"
-          @change="handleChange($event, 'q4')"
-          @start="onDragStart"
-          @end="onDragEnd"
-        >
-          <template #item="{ element }">
-            <div class="draggable-item bg-white p-3 mb-2 rounded shadow-lg
-              transition-transform duration-150
-              hover:scale-[1.02] hover:shadow-xl
-              active:scale-100 active:opacity-80 flex items-center gap-2 group relative">
-              <!-- 新增绿点指示 -->
-              <!-- 标题文本 -->
-              <span class="flex items-center w-full">
-                <!-- ID 标签 - 固定 4 字符宽度 -->
-                <span class="font-mono text-gray-600 bg-gray-100/80 rounded px-1 mr-2 text-right min-w-[3.5ch] max-w-[4ch] flex-none">
-                  {{ element.id }}
-                </span>
-
-                <!-- 标题 - 自动截断 -->
-                <span class="truncate flex-1">
-                  {{ element.title }}
-                </span>
-              </span>
-              <!-- 删除按钮 -->
-              <button
-                @click.stop="deleteTask(element.id)"
-                class="opacity-0 group-hover:opacity-100 transition-opacity
-                 text-red-500 hover:text-red-700 p-1 -mr-2"
-                title="删除任务"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-              </button>
-              <!-- 新增绿点指示 -->
-              <SparklesIcon
-                v-if="lastDraggedTask?.id === element.id"
-                class="size-6 shrink-0 text-yellow-400"
-              />
-              <div
-                v-if="draggingTask?.id === element.id"
-                class="absolute inset-0 border-2 border-dashed border-blue-400 rounded-lg"
-              />
-            </div>
-          </template>
-          <!-- 空状态提示 -->
-          <template #footer>
-            <div
-              v-if="quadrants.q4.length === 0 && currentTargetQuadrant !== 'q4'"
-              class="text-gray-400 text-sm h-full flex items-center justify-center py-4"
-            >
-              拖动任务到这里
-            </div>
-          </template>
-        </draggable>
-      </div>
+      <!-- 使用QuadrantPanel组件 -->
+      <QuadrantPanel
+        v-for="config in quadrantConfig"
+        :key="config.id"
+        :quadrant="config.id"
+        :title="config.title"
+        :color="config.color"
+        :tasks="quadrants[config.id]"
+        :dragging-task="draggingTask"
+        :last-dragged-task="lastDraggedTask"
+        :current-target-quadrant="currentTargetQuadrant"
+        @change="handleChange"
+        @drag-start="onDragStart"
+        @drag-end="onDragEnd"
+        @drag-over="onDragOver"
+        @complete-task="completeTask"
+        @delete-task="deleteTask"
+      />
     </div>
   </div>
 </template>
 
-<style>
-
-</style>
+<style></style>

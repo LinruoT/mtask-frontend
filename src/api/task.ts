@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASEURL,
-  timeout: 5000
+  timeout: 5000,
 })
 
 export const taskService = {
@@ -16,12 +16,15 @@ export const taskService = {
     return data
   },
 
-  async update(id: string, payload: Partial<{ title: string; quadrant: string }>) {
+  async update(
+    id: string,
+    payload: Partial<{ title: string; quadrant: string; completed: boolean }>,
+  ) {
     const { data } = await api.put(`/tasks/${id}`, payload)
     return data
   },
 
   async delete(id: string) {
     await api.delete(`/tasks/${id}`)
-  }
+  },
 }

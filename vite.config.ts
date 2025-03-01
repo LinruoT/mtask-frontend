@@ -20,7 +20,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000', // 后端服务器地址
+        target: 'http://localhost:3000/api', // 后端服务器地址
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
