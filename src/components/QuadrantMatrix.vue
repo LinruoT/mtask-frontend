@@ -159,23 +159,23 @@ const onDragOver = (quadrant: string) => {
 
 // 象限配置
 const quadrantConfig = [
-  { id: 'q1', title: '重要且紧急', color: 'red' },
-  { id: 'q2', title: '紧急不重要', color: 'yellow' },
-  { id: 'q3', title: '重要不紧急', color: 'green' },
-  { id: 'q4', title: '不重要不紧急', color: 'blue' },
+  { id: 'q1' as const, title: '重要且紧急', color: 'red' },
+  { id: 'q2' as const, title: '紧急不重要', color: 'yellow' },
+  { id: 'q3' as const, title: '重要不紧急', color: 'green' },
+  { id: 'q4' as const, title: '不重要不紧急', color: 'blue' },
 ]
 </script>
 
 <template>
   <div class="container mx-auto p-2 min-w-[800px] max-w-[90vw]">
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-3xl font-bold whitespace-nowrap">四象限任务矩阵</h1>
+      <div class="text-lg text-gray-500">拖拽任务到不同象限进行分类</div>
       <span v-if="draggingTask" class="text-gray-500 text-lg whitespace-nowrap">
         正在移动：{{ draggingTask.title }}
       </span>
     </div>
     <!-- 新增任务表单 -->
-    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mb-4">
       <input
         ref="inputRef"
         v-model="newTask.title"
@@ -210,7 +210,11 @@ const quadrantConfig = [
       </button>
     </div>
     <div v-if="loading">加载中...</div>
-    <div v-else class="grid grid-cols-2 grid-rows-[quadrant] gap-4 h-[800px] w-full">
+    <div
+      v-else
+      class="grid grid-cols-2 gap-4 h-auto min-h-[500px]"
+      style="grid-template-rows: minmax(250px, 1fr) minmax(250px, 1fr)"
+    >
       <!-- 使用QuadrantPanel组件 -->
       <QuadrantPanel
         v-for="config in quadrantConfig"

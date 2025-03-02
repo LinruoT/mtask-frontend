@@ -8,6 +8,14 @@ interface Task {
   completed: boolean
 }
 
+// 定义用户类型
+interface User {
+  id: string
+  username: string
+  email: string
+  password: string
+}
+
 // 模拟数据存储
 const tasks: Task[] = [
   { id: '1001', title: '完成项目计划', quadrant: 'q1', completed: false },
@@ -22,24 +30,135 @@ const completedTasks: Task[] = [
   { id: '2002', title: '更新文档', quadrant: 'q3', completed: true },
 ]
 
+// 用户存储
+const users: User[] = [
+  {
+    id: '1',
+    username: 'admin',
+    email: 'admin@example.com',
+    password: 'password',
+  },
+]
+
+// 当前登录的用户会话 (模拟服务器端session)
+let currentSession: { userId: string } | null = null
+
 // 生成唯一ID
 const generateId = () => {
   return Math.floor(1000 + Math.random() * 9000).toString()
 }
 
 export const handlers = [
+  // 用户登录
+  http.post('/api/auth/login', async ({ request }) => {
+    const { username, password } = (await request.json()) as { username: string; password: string }
+
+    const user = users.find((u) => u.username === username && u.password === password)
+
+    if (user) {
+      // 设置会话
+      currentSession = { userId: user.id }
+
+      // 设置cookie (模拟)
+      return new HttpResponse(null, {
+        status: 200,
+        headers: {
+          'Set-Cookie': `sessionId=${generateId()}; Path=/; HttpOnly; SameSite=Strict`,
+        },
+      })
+    }
+
+    return new HttpResponse(JSON.stringify({ message: '用户名或密码错误' }), { status: 401 })
+  }),
+
+  // 用户登出
+  http.post('/api/auth/logout', () => {
+    // 清除会话
+    currentSession = null
+
+    // 清除cookie (模拟)
+    return new HttpResponse(null, {
+      status: 200,
+      headers: {
+        'Set-Cookie':
+          'sessionId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict',
+      },
+    })
+  }),
+
+  // 获取当前用户
+  http.get('/api/auth/current-user', () => {
+    // 检查是否有会话
+    if (!currentSession) {
+      return new HttpResponse(null, { status: 401 })
+    }
+
+    // 查找用户
+    const user = users.find((u) => u.id === currentSession?.userId)
+
+    if (user) {
+      const { password, ...userWithoutPassword } = user
+      return HttpResponse.json(userWithoutPassword)
+    }
+
+    return new HttpResponse(null, { status: 401 })
+  }),
+
+  // 用户注册
+  http.post('/api/auth/register', async ({ request }) => {
+    const newUser = (await request.json()) as Partial<User>
+
+    // 检查用户名是否已存在
+    if (users.some((u) => u.username === newUser.username)) {
+      return new HttpResponse(JSON.stringify({ message: '用户名已存在' }), { status: 400 })
+    }
+
+    // 检查邮箱是否已存在
+    if (users.some((u) => u.email === newUser.email)) {
+      return new HttpResponse(JSON.stringify({ message: '邮箱已被注册' }), { status: 400 })
+    }
+
+    // 创建新用户
+    const user: User = {
+      id: generateId(),
+      username: newUser.username || '',
+      email: newUser.email || '',
+      password: newUser.password || '',
+    }
+
+    users.push(user)
+
+    const { password, ...userWithoutPassword } = user
+    return HttpResponse.json(userWithoutPassword, { status: 201 })
+  }),
+
   // 获取所有任务
   http.get('/api/tasks', () => {
-    return HttpResponse.json(tasks.filter((task) => !task.completed))
+    // 检查是否有会话
+    if (!currentSession) {
+      return new HttpResponse(null, { status: 401 })
+    }
+
+    return HttpResponse.json(tasks)
   }),
 
   // 获取已完成任务
   http.get('/api/tasks/completed', () => {
+    // 检查是否有会话
+    if (!currentSession) {
+      return new HttpResponse(null, { status: 401 })
+    }
+
     return HttpResponse.json(completedTasks)
   }),
 
   // 创建任务
   http.post('/api/tasks', async ({ request }) => {
+    // 检查是否有会话
+    if (!currentSession) {
+      return new HttpResponse(null, { status: 401 })
+    }
+
     const newTask = (await request.json()) as Partial<Task>
     const taskWithId: Task = {
       id: generateId(),
@@ -54,6 +173,11 @@ export const handlers = [
 
   // 更新任务
   http.put('/api/tasks/:id', async ({ params, request }) => {
+    // 检查是否有会话
+    if (!currentSession) {
+      return new HttpResponse(null, { status: 401 })
+    }
+
     const { id } = params
     const updates = (await request.json()) as Partial<Task>
 
@@ -91,6 +215,11 @@ export const handlers = [
 
   // 删除任务
   http.delete('/api/tasks/:id', ({ params }) => {
+    // 检查是否有会话
+    if (!currentSession) {
+      return new HttpResponse(null, { status: 401 })
+    }
+
     const { id } = params
 
     // 从未完成任务中删除
