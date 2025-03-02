@@ -338,8 +338,8 @@ body {
 }
 
 .avatar {
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
   color: white;
@@ -349,7 +349,7 @@ body {
   font-weight: 600;
   box-shadow: var(--shadow-sm);
   transition: all var(--animation-speed) ease;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
 }
 
 @media (min-width: 768px) {
@@ -385,7 +385,7 @@ body {
 
 .logout-button {
   margin-left: 0.5rem;
-  padding: 0.3rem 0.6rem;
+  padding: 0.2rem 0.5rem;
   border-radius: var(--border-radius-sm);
   background: transparent;
   color: var(--color-secondary);

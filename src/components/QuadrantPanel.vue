@@ -121,7 +121,7 @@ const colorClasses = getColorClasses()
       currentTargetQuadrant === quadrant
         ? 'border-dashed ' + colorClasses.borderActive
         : colorClasses.border,
-      tasks.length === 0 ? 'min-h-[200px]' : '',
+      tasks.length === 0 ? 'min-h-[150px] md:min-h-[200px]' : '',
       'p-2 rounded-lg border-2 flex flex-col',
     ]"
     @dragover.prevent="onDragOver"
@@ -132,7 +132,7 @@ const colorClasses = getColorClasses()
       group="tasks"
       item-key="id"
       :class="[
-        'drag-area h-full min-h-[200px] relative rounded-lg border-2',
+        'drag-area h-full min-h-[150px] md:min-h-[200px] relative rounded-lg border-2',
         colorClasses.dragArea,
       ]"
       @change="handleChange"
@@ -159,7 +159,7 @@ const colorClasses = getColorClasses()
           <!-- 完成按钮 -->
           <button
             @click.stop="completeTask(element.id)"
-            class="opacity-0 group-hover:opacity-100 transition-opacity text-green-500 hover:text-green-700 p-1 -mr-2 rounded-full hover:bg-green-100"
+            class="md:opacity-0 md:group-hover:opacity-100 transition-opacity text-green-500 hover:text-green-700 p-1 -mr-2 rounded-full hover:bg-green-100"
             title="完成任务"
           >
             <CheckIcon class="w-5 h-5" />
@@ -168,7 +168,7 @@ const colorClasses = getColorClasses()
           <!-- 删除按钮 -->
           <button
             @click.stop="deleteTask(element.id)"
-            class="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 p-1 -mr-2 rounded-full hover:bg-red-100"
+            class="md:opacity-0 md:group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 p-1 -mr-2 rounded-full hover:bg-red-100"
             title="删除任务"
           >
             <TrashIcon class="w-5 h-5" />

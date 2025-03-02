@@ -167,8 +167,8 @@ const quadrantConfig = [
 </script>
 
 <template>
-  <div class="container mx-auto p-2 min-w-[800px] max-w-[90vw]">
-    <div class="flex items-center justify-between mb-6">
+  <div class="container mx-auto p-2 max-w-[90vw]">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-2">
       <div class="text-lg text-gray-500">拖拽任务到不同象限进行分类</div>
       <span v-if="draggingTask" class="text-gray-500 text-lg whitespace-nowrap">
         正在移动：{{ draggingTask.title }}
@@ -212,8 +212,8 @@ const quadrantConfig = [
     <div v-if="loading">加载中...</div>
     <div
       v-else
-      class="grid grid-cols-2 gap-4 h-auto min-h-[500px]"
-      style="grid-template-rows: minmax(250px, 1fr) minmax(250px, 1fr)"
+      class="grid grid-cols-1 md:grid-cols-2 gap-4 h-auto md:min-h-[500px]"
+      style="grid-template-rows: auto"
     >
       <!-- 使用QuadrantPanel组件 -->
       <QuadrantPanel
