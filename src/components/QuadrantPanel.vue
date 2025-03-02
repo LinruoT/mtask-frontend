@@ -25,19 +25,18 @@ const props = defineProps<{
 
 // 定义事件
 const emit = defineEmits<{
-  (
-    e: 'change',
+  change: [
     event: {
       added?: { element: Task; newIndex: number }
       moved?: { oldIndex: number; newIndex: number }
     },
-    quadrant: string,
-  ): void
-  (e: 'dragStart', event: { item: { __draggable_context: { element: Task } } }): void
-  (e: 'dragEnd'): void
-  (e: 'dragOver', quadrant: string): void
-  (e: 'completeTask', taskId: string): void
-  (e: 'deleteTask', taskId: string): void
+    quadrant: 'q1' | 'q2' | 'q3' | 'q4',
+  ]
+  'drag-start': [e: { item: { __draggable_context: { element: Task } } }]
+  'drag-end': []
+  'drag-over': [quadrant: string]
+  'complete-task': [taskId: string]
+  'delete-task': [taskId: string]
 }>()
 
 const handleChange = (event: {
@@ -48,23 +47,23 @@ const handleChange = (event: {
 }
 
 const onDragStart = (event: { item: { __draggable_context: { element: Task } } }) => {
-  emit('dragStart', event)
+  emit('drag-start', event)
 }
 
 const onDragEnd = () => {
-  emit('dragEnd')
+  emit('drag-end')
 }
 
 const onDragOver = () => {
-  emit('dragOver', props.quadrant)
+  emit('drag-over', props.quadrant)
 }
 
 const completeTask = (taskId: string) => {
-  emit('completeTask', taskId)
+  emit('complete-task', taskId)
 }
 
 const deleteTask = (taskId: string) => {
-  emit('deleteTask', taskId)
+  emit('delete-task', taskId)
 }
 
 // 根据颜色生成相应的类名
