@@ -4,6 +4,15 @@ import { useTaskStore } from '@/stores/task'
 import { storeToRefs } from 'pinia'
 import { CheckCircleIcon, ArrowPathIcon, TrashIcon } from '@heroicons/vue/24/solid'
 
+// 为已完成任务定义扩展接口
+interface CompletedTask {
+  id: string
+  title: string
+  quadrant: 'q1' | 'q2' | 'q3' | 'q4'
+  completed?: boolean
+  completedAt?: string | Date
+}
+
 const taskStore = useTaskStore()
 const { completedTasks, loading } = storeToRefs(taskStore)
 
@@ -100,8 +109,11 @@ const getQuadrantName = (quadrant: string) => {
               </span>
               <span class="text-xs text-gray-500">ID: {{ task.id }}</span>
             </div>
-            <span v-if="task.completedAt" class="text-xs text-gray-500 block mt-1">
-              完成时间: {{ new Date(task.completedAt).toLocaleString() }}
+            <span
+              v-if="(task as CompletedTask).completedAt"
+              class="text-xs text-gray-500 block mt-1"
+            >
+              完成时间: {{ new Date((task as CompletedTask).completedAt!).toLocaleString() }}
             </span>
           </div>
           <div class="flex gap-1">
