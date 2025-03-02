@@ -159,10 +159,10 @@ const onDragOver = (quadrant: string) => {
 
 // 象限配置
 const quadrantConfig = [
-  { id: 'q1' as const, title: '重要且紧急', color: 'red' },
-  { id: 'q2' as const, title: '紧急不重要', color: 'yellow' },
-  { id: 'q3' as const, title: '重要不紧急', color: 'green' },
-  { id: 'q4' as const, title: '不重要不紧急', color: 'blue' },
+  { id: 'q1' as const, title: '重要且紧急', color: 'indigo' },
+  { id: 'q2' as const, title: '紧急不重要', color: 'purple' },
+  { id: 'q3' as const, title: '重要不紧急', color: 'teal' },
+  { id: 'q4' as const, title: '不重要不紧急', color: 'gray' },
 ]
 </script>
 

@@ -78,6 +78,7 @@ const getColorClasses = () => {
       dragArea: string
     }
   > = {
+    // 保留原有颜色映射，以防其他地方引用
     red: {
       bg: 'bg-red-50',
       border: 'border-red-200',
@@ -106,9 +107,38 @@ const getColorClasses = () => {
       text: 'text-blue-600',
       dragArea: 'border-blue-200',
     },
+    // 新增工作友好的颜色映射
+    indigo: {
+      bg: 'bg-indigo-50',
+      border: 'border-indigo-200',
+      borderActive: 'border-indigo-400',
+      text: 'text-indigo-700',
+      dragArea: 'border-indigo-200',
+    },
+    purple: {
+      bg: 'bg-purple-50',
+      border: 'border-purple-200',
+      borderActive: 'border-purple-400',
+      text: 'text-purple-700',
+      dragArea: 'border-purple-200',
+    },
+    teal: {
+      bg: 'bg-teal-50',
+      border: 'border-teal-200',
+      borderActive: 'border-teal-400',
+      text: 'text-teal-700',
+      dragArea: 'border-teal-200',
+    },
+    gray: {
+      bg: 'bg-gray-50',
+      border: 'border-gray-200',
+      borderActive: 'border-gray-400',
+      text: 'text-gray-700',
+      dragArea: 'border-gray-200',
+    },
   }
 
-  return colorMap[props.color] || colorMap.blue
+  return colorMap[props.color] || colorMap.gray
 }
 
 const colorClasses = getColorClasses()
